@@ -16,20 +16,26 @@
  */
 package javajdbcswing;
 
+import javajdbcswing.db.DAO;
+import javajdbcswing.db.JFrameDAO;
+
 /**
  *
  * @author CodeFireUA <edu@codefire.com.ua>
  */
 public class NewConnectionFrame extends javax.swing.JDialog {
 
+    private MainFrame mainFrame;
+
     /**
      * Creates new form NewConnectionFrame
      */
-    public NewConnectionFrame() {
+    public NewConnectionFrame(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
+        
         initComponents();
-        
+     
         setModal(true);
-        
         getRootPane().setDefaultButton(jbConnect);
     }
 
@@ -179,53 +185,25 @@ public class NewConnectionFrame extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jbCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbCancelActionPerformed
-        
+
         dispose();
-        
+
     }//GEN-LAST:event_jbCancelActionPerformed
 
     private void jbConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbConnectActionPerformed
+
+        String hostname = String.format("%s:%d", jtfHostAddress.getText(), jsHostPort.getValue());
+        String username = jtfUsername.getText();
+        String password = String.valueOf(jpfPassword.getPassword());
+        
+        JFrameDAO frameDAO = new JFrameDAO(hostname, username, password);
+        mainFrame.updateDao(frameDAO);
         
         // TODO: CONNECT...
-        
         dispose();
-        
+
     }//GEN-LAST:event_jbConnectActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(NewConnectionFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(NewConnectionFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(NewConnectionFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(NewConnectionFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new NewConnectionFrame().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;

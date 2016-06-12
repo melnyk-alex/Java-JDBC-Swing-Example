@@ -20,7 +20,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javajdbcswing.db.Database;
 import javajdbcswing.db.JFrameDAO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -34,38 +33,26 @@ import javax.swing.table.TableModel;
  */
 public class MainFrame extends javax.swing.JFrame {
 
-    private JFrameDAO dao;
+    private JFrameDAO frameDAO;
 
     /**
      * Creates new form MainFrame
      */
     public MainFrame() {
-        dao = new JFrameDAO("localhost", "root", "codefire");
-
         initComponents();
 
         setLocationRelativeTo(null);
-
-//        refreshDatabases();
     }
 
     private void refreshDatabases() {
-        try {
-            List<String> databaseList = dao.getDatabaseList();
-            Object[] databaseArray = databaseList.toArray();
+        if (frameDAO != null) {
+            try {
+                Object[] databaseArray = frameDAO.getDatabaseList().toArray();
 
-            DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
-
-            int i = 1;
-            for (String databaseName : databaseList) {
-                Database db = new Database(i++, databaseName);
-
-                dcbm.addElement(db);
+                jcbDatabases.setModel(new DefaultComboBoxModel(databaseArray));
+            } catch (SQLException ex) {
+                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
-
-            jcbDatabases.setModel(dcbm);
-        } catch (SQLException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -131,7 +118,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         jmFile.setText("File");
 
-        jmiNewConnection.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        jmiNewConnection.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         jmiNewConnection.setText("New connection...");
         jmiNewConnection.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -206,11 +193,10 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void jbShowTablesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbShowTablesActionPerformed
 
-        Database db = (Database) jcbDatabases.getSelectedItem();
-        String databaseName = db.getName();
+        String databaseName = jcbDatabases.getSelectedItem().toString();
 
         try {
-            List<String> tableList = dao.getTableList(databaseName);
+            List<String> tableList = frameDAO.getTableList(databaseName);
 
             DefaultListModel dlm = new DefaultListModel();
 
@@ -237,12 +223,11 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void showTable() {
         if (jlTables.getSelectedIndex() >= 0) {
-            Database db = (Database) jcbDatabases.getSelectedItem();
-            String databaseName = db.getName();
+            String databaseName = jcbDatabases.getSelectedItem().toString();
             String tableName = jlTables.getSelectedValue();
 
             try {
-                TableModel tableModel = dao.getTableModel(databaseName, tableName);
+                TableModel tableModel = frameDAO.getTableModel(databaseName, tableName);
                 jtData.setModel(tableModel);
             } catch (SQLException ex) {
                 Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -269,45 +254,34 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void jmiNewConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiNewConnectionActionPerformed
 
-        NewConnectionFrame connectionFrame = new NewConnectionFrame();
+        NewConnectionFrame connectionFrame = new NewConnectionFrame(this);
         connectionFrame.setLocationRelativeTo(this);
         connectionFrame.setVisible(true);
-        
+
     }//GEN-LAST:event_jmiNewConnectionActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new MainFrame().setVisible(true);
             }
         });
+    }
+    
+    public void updateDao(JFrameDAO dao) {
+        this.frameDAO = dao;
+        
+        refreshDatabases();
+        
+        jcbDatabases.setEnabled(true);
+        jbShowTables.setEnabled(true);
+        jlTables.setEnabled(true);
+        jtData.setEnabled(true);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
